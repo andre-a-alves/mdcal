@@ -21,9 +21,8 @@ type CalendarOptions struct {
 
 func main() {
 	// Define flags
-	firstDayLong := flag.String("firstday", "monday", "First day of the week (monday, sunday, etc.)")
+	weekStart := flag.String("weekstart", "monday", "First day of the week (monday, sunday, etc.)")
 	showCalWeek := flag.Bool("week", true, "Show calendar week numbers")
-	showWeekends := flag.Bool("weekends", true, "Show weekend days")
 	workweek := flag.Bool("workweek", false, "Show only workdays (Monday-Friday)")
 	showComments := flag.Bool("comments", true, "Add a comments column")
 	versionFlag := flag.Bool("version", false, "Print version information")
@@ -37,18 +36,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Handle workweek alias
-	if *workweek {
-		*showWeekends = false
-	}
-
 	// Initialize options with defaults
 	options := CalendarOptions{
 		Year:             time.Now().Year(),
 		Month:            0, // 0 means generate for the whole year
-		FirstDayOfWeek:   parseWeekday(*firstDayLong),
+		FirstDayOfWeek:   parseWeekday(*weekStart),
 		ShowCalendarWeek: *showCalWeek,
-		ShowWeekends:     *showWeekends,
+		ShowWeekends:     !*workweek,
 		ShowComments:     *showComments,
 	}
 
@@ -111,33 +105,43 @@ func runInteractiveMode(options *CalendarOptions) {
 		options.Month = 0
 	}
 
-	// Get first day of week
-	fmt.Print("First day of week (monday, sunday, etc., default: monday): ")
-	firstDayInput, _ := reader.ReadString('\n')
-	firstDayInput = strings.TrimSpace(firstDayInput)
-	if firstDayInput != "" {
-		options.FirstDayOfWeek = parseWeekday(firstDayInput)
+	// Get week start day
+	fmt.Print("Week starts on (monday, sunday, etc., default: monday): ")
+	weekStartInput, _ := reader.ReadString('\n')
+	weekStartInput = strings.TrimSpace(weekStartInput)
+	if weekStartInput != "" {
+		options.FirstDayOfWeek = parseWeekday(weekStartInput)
 	}
 
 	// Show calendar week?
-	fmt.Print("Show calendar week numbers? (y/n, default: n): ")
+	fmt.Print("Show calendar week numbers? (y/n, default: y): ")
 	weekInput, _ := reader.ReadString('\n')
 	weekInput = strings.TrimSpace(strings.ToLower(weekInput))
-	options.ShowCalendarWeek = weekInput == "y" || weekInput == "yes"
+	if weekInput == "" || weekInput == "y" || weekInput == "yes" {
+		options.ShowCalendarWeek = true
+	} else {
+		options.ShowCalendarWeek = false
+	}
 
-	// Show weekends?
-	fmt.Print("Show weekends? (y/n, default: y): ")
-	weekendsInput, _ := reader.ReadString('\n')
-	weekendsInput = strings.TrimSpace(strings.ToLower(weekendsInput))
-	if weekendsInput != "" {
-		options.ShowWeekends = !(weekendsInput == "n" || weekendsInput == "no")
+	// Show work week only?
+	fmt.Print("Show work week only? (y/n, default: n): ")
+	workweekInput, _ := reader.ReadString('\n')
+	workweekInput = strings.TrimSpace(strings.ToLower(workweekInput))
+	if workweekInput == "y" || workweekInput == "yes" {
+		options.ShowWeekends = false
+	} else {
+		options.ShowWeekends = true
 	}
 
 	// Show comments column?
-	fmt.Print("Add comments column? (y/n, default: n): ")
+	fmt.Print("Add comments column? (y/n, default: y): ")
 	commentsInput, _ := reader.ReadString('\n')
 	commentsInput = strings.TrimSpace(strings.ToLower(commentsInput))
-	options.ShowComments = commentsInput == "y" || commentsInput == "yes"
+	if commentsInput == "" || commentsInput == "y" || commentsInput == "yes" {
+		options.ShowComments = true
+	} else {
+		options.ShowComments = false
+	}
 
 	fmt.Println() // Add a blank line before calendar output
 }
@@ -177,6 +181,13 @@ func parseWeekday(day string) time.Weekday {
 	}
 }
 
+func padRight(s string, width int) string {
+	if len(s) < width {
+		return s + strings.Repeat(" ", width-len(s))
+	}
+	return s
+}
+
 func generateMonthCalendar(options CalendarOptions) string {
 	var sb strings.Builder
 
@@ -184,48 +195,59 @@ func generateMonthCalendar(options CalendarOptions) string {
 	month := time.Month(options.Month)
 	sb.WriteString(fmt.Sprintf("# %s %d\n\n", month.String(), options.Year))
 
-	// all weekday names Mon=0…Sun=6
-	allNames := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+	// all weekday names with full names
+	allShortNames := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+	allFullNames := []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
+
 	// convert time.Weekday (Mon=1…) to 0-based Monday=0…Sunday=6
 	firstIndex := (int(options.FirstDayOfWeek) + 6) % 7
-	shifted := append(allNames[firstIndex:], allNames[:firstIndex]...)
+	shiftedShort := append(allShortNames[firstIndex:], allShortNames[:firstIndex]...)
+	shiftedFull := append(allFullNames[firstIndex:], allFullNames[:firstIndex]...)
 
 	// strip weekends if needed
-	var dayNames []string
-	for _, d := range shifted {
+	var dayShortNames, dayFullNames []string
+	for i, d := range shiftedShort {
 		if !options.ShowWeekends && (d == "Sat" || d == "Sun") {
 			continue
 		}
-		dayNames = append(dayNames, d)
+		dayShortNames = append(dayShortNames, d)
+		dayFullNames = append(dayFullNames, shiftedFull[i])
+	}
+
+	// prepare column headers and widths
+	var columnHeaders []string
+	var columnWidths []int
+	if options.ShowCalendarWeek {
+		columnHeaders = append(columnHeaders, "CW")
+		columnWidths = append(columnWidths, len("CW"))
+	}
+	for _, d := range dayFullNames {
+		columnHeaders = append(columnHeaders, d)
+		columnWidths = append(columnWidths, len(d))
+	}
+	if options.ShowComments {
+		columnHeaders = append(columnHeaders, "Comments")
+		columnWidths = append(columnWidths, len("Comments"))
 	}
 
 	// header row
-	if options.ShowCalendarWeek {
-		sb.WriteString("| Week |")
-	}
-	for _, d := range dayNames {
-		sb.WriteString(fmt.Sprintf(" %s |", d))
-	}
-	if options.ShowComments {
-		sb.WriteString(" Comments |")
+	sb.WriteString("|")
+	for i, h := range columnHeaders {
+		w := columnWidths[i]
+		sb.WriteString(" " + padRight(h, w) + " |")
 	}
 	sb.WriteString("\n")
 
-	// separator
-	if options.ShowCalendarWeek {
-		sb.WriteString("|------|")
-	}
-	for range dayNames {
-		sb.WriteString("-----|")
-	}
-	if options.ShowComments {
-		sb.WriteString("----------|")
+	// separator row
+	sb.WriteString("|")
+	for _, w := range columnWidths {
+		sb.WriteString(" " + strings.Repeat("-", w) + " |")
 	}
 	sb.WriteString("\n")
 
-	// map each column back to a time.Weekday
+	// map back to weekdays
 	var weekDays []time.Weekday
-	for _, d := range dayNames {
+	for _, d := range dayShortNames {
 		switch d {
 		case "Mon":
 			weekDays = append(weekDays, time.Monday)
@@ -244,7 +266,7 @@ func generateMonthCalendar(options CalendarOptions) string {
 		}
 	}
 
-	// compute the first day of the month and its “week start”
+	// compute first and last days
 	firstOfMonth := time.Date(options.Year, month, 1, 0, 0, 0, 0, time.UTC)
 	lastOfMonth := time.Date(options.Year, month+1, 0, 0, 0, 0, 0, time.UTC)
 	shift := (int(firstOfMonth.Weekday()) - int(options.FirstDayOfWeek) + 7) % 7
@@ -252,22 +274,31 @@ func generateMonthCalendar(options CalendarOptions) string {
 
 	// print each week
 	for cur := weekStart; !cur.After(lastOfMonth); cur = cur.AddDate(0, 0, 7) {
+		var cells []string
 		if options.ShowCalendarWeek {
 			_, w := cur.ISOWeek()
-			sb.WriteString(fmt.Sprintf("| %02d  |", w))
+			// leave calendar week right‐justified if you prefer, or treat like a header
+			cells = append(cells, fmt.Sprintf("%d", w))
 		}
 		for _, wd := range weekDays {
-			// compute this column’s date
 			delta := (int(wd) - int(options.FirstDayOfWeek) + 7) % 7
 			cd := cur.AddDate(0, 0, delta)
 			if cd.Month() == month {
-				sb.WriteString(fmt.Sprintf(" %2d  |", cd.Day()))
+				// no leading zero, left-justify
+				cells = append(cells, fmt.Sprintf("%d", cd.Day()))
 			} else {
-				sb.WriteString("     |")
+				cells = append(cells, "")
 			}
 		}
 		if options.ShowComments {
-			sb.WriteString("          |")
+			cells = append(cells, "")
+		}
+
+		sb.WriteString("|")
+		for i, cell := range cells {
+			w := columnWidths[i]
+			// left-justify all cells now
+			sb.WriteString(" " + padRight(cell, w) + " |")
 		}
 		sb.WriteString("\n")
 	}
