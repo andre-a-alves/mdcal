@@ -17,6 +17,7 @@ type CalendarOptions struct {
 	ShowCalendarWeek bool
 	ShowWeekends     bool
 	ShowComments     bool
+	Justify          string
 }
 
 func main() {
@@ -26,6 +27,7 @@ func main() {
 	workweek := flag.Bool("workweek", false, "Show only workdays (Monday-Friday)")
 	showComments := flag.Bool("comments", true, "Add a comments column")
 	versionFlag := flag.Bool("version", false, "Print version information")
+	justify := flag.String("justify", "left", "Cell justification: left, center, or right")
 
 	// Parse flags
 	flag.Parse()
@@ -44,6 +46,7 @@ func main() {
 		ShowCalendarWeek: *showCalWeek,
 		ShowWeekends:     !*workweek,
 		ShowComments:     *showComments,
+		Justify:          *justify,
 	}
 
 	// Check if any flags or arguments were provided
@@ -188,6 +191,23 @@ func padRight(s string, width int) string {
 	return s
 }
 
+func separatorCell(width int, justify string) string {
+	if width <= 0 {
+		return ""
+	}
+	switch strings.ToLower(justify) {
+	case "center":
+		if width <= 3 {
+			return ":-:"
+		}
+		return ":" + strings.Repeat("-", width-2) + ":"
+	case "right":
+		return strings.Repeat("-", width-1) + ":"
+	default: // left
+		return ":" + strings.Repeat("-", width-1)
+	}
+}
+
 func generateMonthCalendar(options CalendarOptions) string {
 	var sb strings.Builder
 
@@ -218,8 +238,13 @@ func generateMonthCalendar(options CalendarOptions) string {
 	var columnHeaders []string
 	var columnWidths []int
 	if options.ShowCalendarWeek {
-		columnHeaders = append(columnHeaders, "CW")
-		columnWidths = append(columnWidths, len("CW"))
+		if options.ShowCalendarWeek && strings.ToLower(options.Justify) == "center" {
+			columnHeaders = append(columnHeaders, "CW ")
+			columnWidths = append(columnWidths, len("CW "))
+		} else {
+			columnHeaders = append(columnHeaders, "CW")
+			columnWidths = append(columnWidths, len("CW"))
+		}
 	}
 	for _, d := range dayFullNames {
 		columnHeaders = append(columnHeaders, d)
@@ -241,7 +266,8 @@ func generateMonthCalendar(options CalendarOptions) string {
 	// separator row
 	sb.WriteString("|")
 	for _, w := range columnWidths {
-		sb.WriteString(" " + strings.Repeat("-", w) + " |")
+		sep := separatorCell(w, options.Justify)
+		sb.WriteString(" " + sep + " |")
 	}
 	sb.WriteString("\n")
 
