@@ -34,7 +34,7 @@ func main() {
 
 	// Handle version flag
 	if *versionFlag {
-		fmt.Println("Calendar v0.1.0")
+		fmt.Println("mdcal v0.1.0")
 		os.Exit(0)
 	}
 
