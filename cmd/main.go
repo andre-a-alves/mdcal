@@ -34,7 +34,7 @@ func main() {
 
 	// Handle version flag
 	if *versionFlag {
-		fmt.Println("mdcal v0.0.1")
+		fmt.Printf("mdcal v%v\n", getVersion())
 		os.Exit(0)
 	}
 
