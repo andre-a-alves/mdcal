@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"bufio"
@@ -20,7 +20,7 @@ type CalendarOptions struct {
 	Justify          string
 }
 
-func main() {
+func Execute() {
 	// Define flags
 	weekStart := flag.String("weekstart", "monday", "First day of the week (monday, sunday, etc.)")
 	showCalWeek := flag.Bool("week", true, "Show calendar week numbers")
