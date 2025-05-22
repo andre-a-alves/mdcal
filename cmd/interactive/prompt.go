@@ -454,8 +454,8 @@ func (m *Model) updateOptions() error {
 	}
 
 	// First day of week
-	// Convert from UI index (Monday=0, Tuesday=1, etc.) to time.Weekday (Sunday=0, Monday=1, etc.)
-	m.options.FirstDayOfWeek = time.Weekday((m.weekdayIndex + 1) % 7)
+	// weekdayIndex already uses time.Weekday values
+	m.options.FirstDayOfWeek = time.Weekday(m.weekdayIndex)
 
 	// Boolean options
 	m.options.ShowCalendarWeek = m.showWeekNumbers
