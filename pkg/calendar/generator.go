@@ -39,12 +39,12 @@ func GenerateMonthCalendar(options Options) string {
 	var columnHeaders []string
 	var columnWidths []int
 	if options.ShowCalendarWeek {
-		if options.ShowCalendarWeek && strings.ToLower(options.Justify) == "center" {
-			columnHeaders = append(columnHeaders, "CW ")
-			columnWidths = append(columnWidths, len("CW "))
+		if strings.ToLower(options.Justify) == "center" {
+			columnHeaders = append(columnHeaders, "CW   ")
+			columnWidths = append(columnWidths, len("CW   "))
 		} else {
-			columnHeaders = append(columnHeaders, "CW")
-			columnWidths = append(columnWidths, len("CW"))
+			columnHeaders = append(columnHeaders, "CW  ")
+			columnWidths = append(columnWidths, len("CW  "))
 		}
 	}
 	for _, d := range dayFullNames {
@@ -105,7 +105,7 @@ func GenerateMonthCalendar(options Options) string {
 		if options.ShowCalendarWeek {
 			_, w := cur.ISOWeek()
 			// leave calendar week right‐justified if you prefer, or treat like a header
-			cells = append(cells, fmt.Sprintf("%d", w))
+			cells = append(cells, fmt.Sprintf("_%d_", w))
 		}
 		for _, wd := range weekDays {
 			delta := (int(wd) - int(options.FirstDayOfWeek) + 7) % 7
