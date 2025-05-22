@@ -33,12 +33,12 @@ func RunInteractiveMode(options *calendar.Options) {
 	monthInput = strings.TrimSpace(monthInput)
 	if monthInput != "" {
 		if month, err := strconv.Atoi(monthInput); err == nil && month >= 1 && month <= 12 {
-			options.Month = month
+			options.Month = &month
 		} else {
 			fmt.Println("Invalid month, generating calendar for the whole year")
 		}
 	} else {
-		options.Month = 0
+		options.Month = nil
 	}
 
 	// Get week start day

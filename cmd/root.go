@@ -27,9 +27,14 @@ func Execute() {
 
 func init() {
 	// Setup the root command
-	rootCmd.Use = "mdcal [year] [month]"
+	rootCmd.Use = "mdcal [year] [month] [endMonth|endYear endMonth]"
 	rootCmd.Short = "Generate a markdown calendar"
-	rootCmd.Long = `mdcal generates a markdown calendar for the specified year and month.
+	rootCmd.Long = `mdcal generates a markdown calendar for the specified year and month or range of months.
+Examples:
+  mdcal 2025 3        - Generate calendar for March 2025
+  mdcal 2025 3 5      - Generate calendar for March through May 2025
+  mdcal 2025 12 2026 1 - Generate calendar for December 2025 through January 2026
+
 If no arguments are provided, it runs in interactive mode.`
 
 	// Define flags
@@ -75,7 +80,7 @@ If no arguments are provided, it runs in interactive mode.`
 			// Run in interactive mode
 			interactive.RunInteractiveMode(&options)
 		} else {
-			// Handle unnamed arguments (year and month)
+			// Handle unnamed arguments (year, month, end year, end month)
 			if len(args) > 0 {
 				if year, err := strconv.Atoi(args[0]); err == nil {
 					options.Year = year
@@ -86,9 +91,39 @@ If no arguments are provided, it runs in interactive mode.`
 
 			if len(args) > 1 {
 				if month, err := strconv.Atoi(args[1]); err == nil && month >= 1 && month <= 12 {
-					options.Month = month
+					options.Month = &month
 				} else {
 					fmt.Println("Invalid month, generating calendar for the whole year")
+				}
+			}
+
+			// Handle range format: year month endMonth or year month endYear endMonth
+			if len(args) == 3 {
+				// If we have 3 args, it's year month endMonth (same year)
+				if endMonth, err := strconv.Atoi(args[2]); err == nil && endMonth >= 1 && endMonth <= 12 {
+					endYear := options.Year
+					options.EndYear = &endYear
+					options.EndMonth = &endMonth
+				} else {
+					fmt.Println("Invalid end month, ignoring range")
+				}
+			} else if len(args) == 4 {
+				// If we have 4 args, it's year month endYear endMonth
+				endYear, errYear := strconv.Atoi(args[2])
+				endMonth, errMonth := strconv.Atoi(args[3])
+
+				if errYear == nil && errMonth == nil && endMonth >= 1 && endMonth <= 12 {
+					options.EndYear = &endYear
+					options.EndMonth = &endMonth
+				} else {
+					if errYear != nil {
+						fmt.Println("Invalid end year, ignoring range")
+					}
+					if errMonth != nil || endMonth < 1 || endMonth > 12 {
+						fmt.Println("Invalid end month, ignoring range")
+					}
+					options.EndYear = nil
+					options.EndMonth = nil
 				}
 			}
 		}

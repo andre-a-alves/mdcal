@@ -5,7 +5,9 @@ import "time"
 // Options represents the configuration for generating a calendar
 type Options struct {
 	Year             int
-	Month            int
+	Month            *int
+	EndYear          *int // End year for range
+	EndMonth         *int // End month for range
 	FirstDayOfWeek   time.Weekday
 	ShowCalendarWeek bool
 	ShowWeekends     bool
@@ -17,7 +19,9 @@ type Options struct {
 func NewOptions() Options {
 	return Options{
 		Year:             time.Now().Year(),
-		Month:            0, // 0 means generate for the whole year
+		Month:            nil, // nil means generate for the whole year
+		EndYear:          nil, // nil means no end year specified
+		EndMonth:         nil, // nil means no end month specified
 		FirstDayOfWeek:   time.Monday,
 		ShowCalendarWeek: true,
 		ShowWeekends:     true,
