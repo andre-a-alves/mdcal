@@ -137,6 +137,16 @@ func GenerateMonthCalendar(options Options) string {
 func PrintCalendar(options Options) string {
 	var result strings.Builder
 
+	// Validate date range the end date is specified
+	if options.EndYear != 0 && options.EndMonth != 0 {
+		startDate := time.Date(options.Year, time.Month(options.Month), 1, 0, 0, 0, 0, time.UTC)
+		endDate := time.Date(options.EndYear, time.Month(options.EndMonth), 1, 0, 0, 0, 0, time.UTC)
+
+		if startDate.After(endDate) {
+			return "Error: End date cannot be before start date\n"
+		}
+	}
+
 	if options.Month == 0 {
 		// Generate calendar for the whole year
 		for m := 1; m <= 12; m++ {
@@ -144,6 +154,30 @@ func PrintCalendar(options Options) string {
 			optionsCopy.Month = m
 			result.WriteString(GenerateMonthCalendar(optionsCopy))
 			result.WriteString("\n") // Add a blank line between months
+		}
+	} else if options.EndYear != 0 && options.EndMonth != 0 {
+		// Generate calendar for a range of months
+		currentYear := options.Year
+		currentMonth := options.Month
+
+		for {
+			optionsCopy := options
+			optionsCopy.Year = currentYear
+			optionsCopy.Month = currentMonth
+			result.WriteString(GenerateMonthCalendar(optionsCopy))
+			result.WriteString("\n") // Add a blank line between months
+
+			// Move to the next month
+			currentMonth++
+			if currentMonth > 12 {
+				currentMonth = 1
+				currentYear++
+			}
+
+			// Check if we've reached the end of the range
+			if currentYear > options.EndYear || (currentYear == options.EndYear && currentMonth > options.EndMonth) {
+				break
+			}
 		}
 	} else {
 		// Generate calendar for the specific month
