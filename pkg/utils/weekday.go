@@ -13,11 +13,11 @@ func ParseWeekday(day string) time.Weekday {
 		return time.Sunday
 	case day == "monday" || day == "mon":
 		return time.Monday
-	case day == "tuesday" || day == "tue":
+	case day == "tuesday" || day == "tue" || day == "tues":
 		return time.Tuesday
 	case day == "wednesday" || day == "wed":
 		return time.Wednesday
-	case day == "thursday" || day == "thu":
+	case day == "thursday" || day == "thu" || day == "thur" || day == "thurs":
 		return time.Thursday
 	case day == "friday" || day == "fri":
 		return time.Friday
