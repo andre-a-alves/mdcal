@@ -1,10 +1,9 @@
 package interactive
 
 import (
+	"github.com/andre-a-alves/mdcal/cmd/calendar"
 	"testing"
 	"time"
-
-	"github.com/andre-a-alves/mdcal/pkg/calendar"
 )
 
 func TestInitialize(t *testing.T) {

@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	calendar2 "github.com/andre-a-alves/mdcal/cmd/calendar"
+	"github.com/andre-a-alves/mdcal/cmd/interactive"
+	"github.com/andre-a-alves/mdcal/cmd/utils"
 	"os"
 	"strconv"
 
-	"github.com/andre-a-alves/mdcal/pkg/calendar"
-	"github.com/andre-a-alves/mdcal/pkg/interactive"
-	"github.com/andre-a-alves/mdcal/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +56,7 @@ If no arguments are provided, it runs in interactive mode.`
 	}
 
 	// initOptionsFromFlags initializes calendar options from command-line flags
-	initOptionsFromFlags := func(cmd *cobra.Command) calendar.Options {
+	initOptionsFromFlags := func(cmd *cobra.Command) calendar2.Options {
 		weekStart, _ := cmd.Flags().GetString("start")
 		noWeekNo, _ := cmd.Flags().GetBool("no-week-no")
 		workweek, _ := cmd.Flags().GetBool("workweek")
@@ -64,7 +64,7 @@ If no arguments are provided, it runs in interactive mode.`
 		shortDayNames, _ := cmd.Flags().GetBool("short")
 		justify, _ := cmd.Flags().GetString("justify")
 
-		options := calendar.NewOptions()
+		options := calendar2.NewOptions()
 		options.FirstDayOfWeek = utils.ParseWeekday(weekStart)
 		options.ShowCalendarWeek = !noWeekNo
 		options.ShowWeekends = !workweek
@@ -81,7 +81,7 @@ If no arguments are provided, it runs in interactive mode.`
 	}
 
 	// processYearArg processes the year argument if present
-	processYearArg := func(args []string, options *calendar.Options) {
+	processYearArg := func(args []string, options *calendar2.Options) {
 		if len(args) > 0 {
 			if year, err := strconv.Atoi(args[0]); err == nil {
 				options.Year = year
@@ -92,7 +92,7 @@ If no arguments are provided, it runs in interactive mode.`
 	}
 
 	// processMonthArg processes the month argument if present
-	processMonthArg := func(args []string, options *calendar.Options) {
+	processMonthArg := func(args []string, options *calendar2.Options) {
 		if len(args) > 1 {
 			if month, err := strconv.Atoi(args[1]); err == nil && month >= 1 && month <= 12 {
 				options.Month = &month
@@ -103,7 +103,7 @@ If no arguments are provided, it runs in interactive mode.`
 	}
 
 	// processDateRangeArgs processes date range arguments if present
-	processDateRangeArgs := func(args []string, options *calendar.Options) {
+	processDateRangeArgs := func(args []string, options *calendar2.Options) {
 		if len(args) == 3 {
 			// If we have 3 args, it's year month endMonth (same year)
 			if endMonth, err := strconv.Atoi(args[2]); err == nil && endMonth >= 1 && endMonth <= 12 {
@@ -135,7 +135,7 @@ If no arguments are provided, it runs in interactive mode.`
 	}
 
 	// processCommandLineArgs processes all command-line arguments
-	processCommandLineArgs := func(args []string, options *calendar.Options) {
+	processCommandLineArgs := func(args []string, options *calendar2.Options) {
 		processYearArg(args, options)
 		processMonthArg(args, options)
 		processDateRangeArgs(args, options)
@@ -159,6 +159,6 @@ If no arguments are provided, it runs in interactive mode.`
 		}
 
 		// Generate and print calendar
-		fmt.Print(calendar.PrintCalendar(options))
+		fmt.Print(calendar2.PrintCalendar(options))
 	}
 }

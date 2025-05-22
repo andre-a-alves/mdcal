@@ -2,10 +2,9 @@ package calendar
 
 import (
 	"fmt"
+	"github.com/andre-a-alves/mdcal/cmd/utils"
 	"strings"
 	"time"
-
-	"github.com/andre-a-alves/mdcal/pkg/utils"
 )
 
 // generateCalendarHeader creates the header for the calendar with month and year

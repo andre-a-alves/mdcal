@@ -2,10 +2,10 @@ package interactive
 
 import (
 	"fmt"
+	"github.com/andre-a-alves/mdcal/cmd/calendar"
 	"strconv"
 	"time"
 
-	"github.com/andre-a-alves/mdcal/pkg/calendar"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -648,8 +648,6 @@ func (m Model) View() string {
 
 // RunInteractiveMode runs the interactive mode using bubbletea
 func RunInteractiveMode(options *calendar.Options) {
-	p := tea.NewProgram(Initialize(options))
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Error running interactive mode: %v\n", err)
-	}
+	// Use the new multi-step UI flow
+	RunMultiStepMode(options)
 }
