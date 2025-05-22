@@ -192,8 +192,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "enter":
-			// All fields can be empty, defaults will be used
+			// Check for validation errors
 			valid := true
+
+			// Validate month input if not empty
+			if (m.mode == MonthMode || m.mode == RangeMode) && m.inputs[1].Value() != "" {
+				if err := validateMonth(m.inputs[1].Value()); err != nil {
+					m.err = err.Error()
+					valid = false
+				}
+			}
+
+			// Validate end month input if not empty
+			if m.mode == RangeMode && m.inputs[3].Value() != "" {
+				if err := validateMonth(m.inputs[3].Value()); err != nil {
+					m.err = err.Error()
+					valid = false
+				}
+			}
 
 			// For Range mode, if end year is empty, use start year
 			if m.mode == RangeMode && m.inputs[2].Value() == "" && m.inputs[0].Value() != "" {
@@ -300,6 +316,10 @@ func (m Model) GetMonth() (*int, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Validate month range
+	if month < 1 || month > 12 {
+		return nil, fmt.Errorf("month must be between 1 and 12")
+	}
 	return &month, nil
 }
 
@@ -340,6 +360,10 @@ func (m Model) GetEndMonth() (*int, error) {
 	endMonth, err := strconv.Atoi(m.inputs[3].Value())
 	if err != nil {
 		return nil, err
+	}
+	// Validate month range
+	if endMonth < 1 || endMonth > 12 {
+		return nil, fmt.Errorf("end month must be between 1 and 12")
 	}
 	return &endMonth, nil
 }
