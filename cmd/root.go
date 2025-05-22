@@ -164,13 +164,17 @@ If no arguments are provided, it runs in interactive mode.`
 
 		if shouldRunInteractively(cmd, args) {
 			// Run in interactive mode
-			interactive.RunInteractiveMode(&options)
+			// Only generate the calendar if the user completed the interactive mode
+			if completed := interactive.RunInteractiveMode(&options); completed {
+				// Generate and print calendar
+				fmt.Print(calendar2.PrintCalendar(options))
+			}
 		} else {
 			// Process command-line arguments
 			processCommandLineArgs(args, &options)
-		}
 
-		// Generate and print calendar
-		fmt.Print(calendar2.PrintCalendar(options))
+			// Generate and print calendar
+			fmt.Print(calendar2.PrintCalendar(options))
+		}
 	}
 }

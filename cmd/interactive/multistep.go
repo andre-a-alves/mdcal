@@ -172,10 +172,20 @@ func (m *MultiStepModel) updateOptions() {
 }
 
 // RunMultiStepMode runs the multi-step interactive mode
-func RunMultiStepMode(options *calendar.Options) {
-	p := tea.NewProgram(InitializeMultiStep(options), tea.WithAltScreen())
-	if _, err := p.Run(); err != nil {
+// Returns true if the user completed the interactive mode, false if they exited early
+func RunMultiStepMode(options *calendar.Options) bool {
+	model := InitializeMultiStep(options)
+	p := tea.NewProgram(model, tea.WithAltScreen())
+	finalModel, err := p.Run()
+	if err != nil {
 		fmt.Printf("Error running interactive mode: %v\n", err)
 		os.Exit(1)
 	}
+
+	// Check if the user completed the interactive mode or exited early
+	if m, ok := finalModel.(MultiStepModel); ok {
+		return !m.quitting
+	}
+
+	return false
 }

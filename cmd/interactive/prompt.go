@@ -660,7 +660,8 @@ func (m Model) View() string {
 }
 
 // RunInteractiveMode runs the interactive mode using bubbletea
-func RunInteractiveMode(options *calendar.Options) {
+// Returns true if the user completed the interactive mode, false if they exited early
+func RunInteractiveMode(options *calendar.Options) bool {
 	// Use the new multi-step UI flow
-	RunMultiStepMode(options)
+	return RunMultiStepMode(options)
 }
