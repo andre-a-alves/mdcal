@@ -39,6 +39,18 @@ go install github.com/andre-a-alves/mdcal@latest
 
 ## Usage
 
+The basic syntax for mdcal is:
+
+```bash
+mdcal [year] [month] [endMonth|endYear endMonth]
+```
+
+Where:
+- `year`: The year for the calendar (defaults to current year)
+- `month`: The month to start the calendar (1-12, omit for whole year)
+- `endMonth`: When specifying a range within the same year
+- `endYear endMonth`: When specifying a range across different years
+
 ### Interactive Mode
 
 Run mdcal without any arguments to enter interactive mode:
@@ -56,6 +68,8 @@ In interactive mode, you'll be prompted to enter:
 - Whether to leave the comments column off
 - Cell justification (left, center, or right)
 
+Note: The month range feature is currently only available through command-line arguments, not in interactive mode.
+
 ### Command-Line Mode
 
 Run mdcal with arguments and flags:
@@ -70,12 +84,20 @@ mdcal 2025
 # Generate calendar for a specific year and month
 mdcal 2025 12
 
+# Generate calendar for a range of months within the same year (March through May 2025)
+mdcal 2025 3 5
+
+# Generate calendar for a range of months across different years (December 2025 through January 2026)
+mdcal 2025 12 2026 1
+
 # Generate calendar with custom options
 mdcal 2025 12 --start=sunday --no-week-no --workweek=true --no-comment=true --justify=center
 
 # Using short flags
 mdcal 2025 12 -s sunday -w -W -c -j center
 ```
+
+Note: When specifying a range of months, the end date must be after the start date. If an invalid range is provided (e.g., `mdcal 2026 1 2025 12`), an error message will be displayed.
 
 ## Options
 
