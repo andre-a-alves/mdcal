@@ -120,17 +120,31 @@ func (m MultiStepModel) View() string {
 		return ""
 	}
 
+	// Define the logo for consistent use across all steps
+	logo := "" +
+		"                  __           __\n" +
+		"   ____ ___  ____/ /________ _/ /\n" +
+		"  / __ `__ \\/ __  / ___/ __ `/ / \n" +
+		" / / / / / / /_/ / /__/ /_/ / /  \n" +
+		"/_/ /_/ /_/\\__,_/\\___/\\__,_/_/   \n" +
+		"📅 Markdown Calendar Generator\n\n"
+
 	// Render the appropriate view based on the current step
 	switch m.step {
 	case SelectionStep:
-		return m.selectionModel.View()
+		// For the selection step, we'll let the selection model handle everything
+		// This should include the logo and question
+		selectionView := m.selectionModel.View()
+		return selectionView
 	case DateInputStep:
-		return m.dateInputModel.View()
+		// For the date input step, add the logo before the date input view
+		return titleStyle.Render(logo) + m.dateInputModel.View()
 	case LayoutOptionsStep:
-		return m.layoutModel.View()
+		// For the layout options step, add the logo before the layout options view
+		return titleStyle.Render(logo) + m.layoutModel.View()
+	default:
+		return "Unknown step"
 	}
-
-	return "Unknown step"
 }
 
 // updateOptions updates the calendar options based on the user's selections

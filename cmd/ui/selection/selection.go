@@ -43,8 +43,16 @@ func NewModel(stepSchema steps.StepSchema) Model {
 		})
 	}
 
-	l := list.New(items, list.NewDefaultDelegate(), 0, 0)
+	// Create a new list with default delegate and explicit size
+	delegate := list.NewDefaultDelegate()
+	l := list.New(items, delegate, 30, 10)
+
+	// Set the title from the step schema
 	l.Title = stepSchema.Header
+
+	// Set styles for better visibility
+	l.SetShowTitle(false)        // Hide the title as we'll display it separately
+	l.SetFilteringEnabled(false) // Disable filtering for simplicity
 
 	return Model{
 		list:     l,
@@ -75,8 +83,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.WindowSizeMsg:
+		// Reserve space for the logo and question (approximately 10 lines)
+		reservedHeight := 10
+
+		// Get the frame size from docStyle
 		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+
+		// Set the list size, reserving space for the logo and question
+		m.list.SetSize(msg.Width-h, msg.Height-v-reservedHeight)
 	}
 
 	var cmd tea.Cmd
@@ -86,7 +100,48 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View renders the UI
 func (m Model) View() string {
-	return docStyle.Render(m.list.View())
+	// Start with the logo
+	output := titleStyle.Render("" +
+		"                  __           __\n" +
+		"   ____ ___  ____/ /________ _/ /\n" +
+		"  / __ `__ \\/ __  / ___/ __ `/ / \n" +
+		" / / / / / / /_/ / /__/ /_/ / /  \n" +
+		"/_/ /_/ /_/\\__,_/\\___/\\__,_/_/   \n" +
+		"📅 Markdown Calendar Generator")
+
+	// Add the question
+	output += "\n\n" + titleStyle.Render("What would you like to generate?") + "\n\n"
+
+	// Get the currently selected index
+	selectedIndex := m.list.Index()
+
+	// Manually render each item in the list
+	items := m.list.Items()
+	for i, item := range items {
+		selItem, ok := item.(SelectionItem)
+		if !ok {
+			continue
+		}
+
+		// Style based on whether this item is selected
+		if i == selectedIndex {
+			output += "▶ " + lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#2D7D9A")).Render(selItem.Title())
+		} else {
+			output += "  " + selItem.Title()
+		}
+
+		// Add the description
+		if selItem.Description() != "" {
+			output += " - " + lipgloss.NewStyle().Faint(true).Render(selItem.Description())
+		}
+
+		output += "\n"
+	}
+
+	// Add help text
+	output += "\n" + lipgloss.NewStyle().Faint(true).Render("↑/↓: Navigate • Enter: Select")
+
+	return output
 }
 
 // Selected returns the selected item
