@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 type CalendarOptions struct {
@@ -20,63 +22,93 @@ type CalendarOptions struct {
 	Justify          string
 }
 
+var rootCmd = &cobra.Command{
+	Use:   "mdcal",
+	Short: "mdcal generates a markdown calendar.",
+	Long:  "A customized markdown calendar generator that can either be run interactively or with option flags.",
+}
+
 func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func init() {
+	// Setup the root command
+	rootCmd.Use = "mdcal [year] [month]"
+	rootCmd.Short = "Generate a markdown calendar"
+	rootCmd.Long = `mdcal generates a markdown calendar for the specified year and month.
+If no arguments are provided, it runs in interactive mode.`
+
 	// Define flags
-	weekStart := flag.String("weekstart", "monday", "First day of the week (monday, sunday, etc.)")
-	showCalWeek := flag.Bool("week", true, "Show calendar week numbers")
-	workweek := flag.Bool("workweek", false, "Show only workdays (Monday-Friday)")
-	showComments := flag.Bool("comments", true, "Add a comments column")
-	versionFlag := flag.Bool("version", false, "Print version information")
-	justify := flag.String("justify", "left", "Cell justification: left, center, or right")
+	rootCmd.PersistentFlags().String("weekstart", "monday", "First day of the week (monday, sunday, etc.)")
+	rootCmd.PersistentFlags().Bool("week", true, "Show calendar week numbers")
+	rootCmd.PersistentFlags().Bool("workweek", false, "Show only workdays (Monday-Friday)")
+	rootCmd.PersistentFlags().Bool("comments", true, "Add a comments column")
+	rootCmd.PersistentFlags().Bool("version", false, "Print version information")
+	rootCmd.PersistentFlags().String("justify", "left", "Cell justification: left, center, or right")
 
-	// Parse flags
-	flag.Parse()
+	rootCmd.Run = func(cmd *cobra.Command, args []string) {
+		// Handle version flag
+		versionFlag, _ := cmd.Flags().GetBool("version")
+		if versionFlag {
+			fmt.Printf("mdcal v%v\n", getVersion())
+			os.Exit(0)
+		}
 
-	// Handle version flag
-	if *versionFlag {
-		fmt.Printf("mdcal v%v\n", getVersion())
-		os.Exit(0)
-	}
+		// Get flag values
+		weekStart, _ := cmd.Flags().GetString("weekstart")
+		showCalWeek, _ := cmd.Flags().GetBool("week")
+		workweek, _ := cmd.Flags().GetBool("workweek")
+		showComments, _ := cmd.Flags().GetBool("comments")
+		justify, _ := cmd.Flags().GetString("justify")
 
-	// Initialize options with defaults
-	options := CalendarOptions{
-		Year:             time.Now().Year(),
-		Month:            0, // 0 means generate for the whole year
-		FirstDayOfWeek:   parseWeekday(*weekStart),
-		ShowCalendarWeek: *showCalWeek,
-		ShowWeekends:     !*workweek,
-		ShowComments:     *showComments,
-		Justify:          *justify,
-	}
+		// Initialize options with defaults
+		options := CalendarOptions{
+			Year:             time.Now().Year(),
+			Month:            0, // 0 means generate for the whole year
+			FirstDayOfWeek:   parseWeekday(weekStart),
+			ShowCalendarWeek: showCalWeek,
+			ShowWeekends:     !workweek,
+			ShowComments:     showComments,
+			Justify:          justify,
+		}
 
-	// Check if any flags or arguments were provided
-	noFlagsOrArgs := flag.NFlag() == 0 && len(flag.Args()) == 0
+		// Check if any args or flags were provided (excluding help flag)
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+			if f.Name == "help" {
+				return
+			}
+		})
+		noFlagsOrArgs := cmd.Flags().NFlag() == 0 && len(args) == 0
 
-	if noFlagsOrArgs {
-		// Run in interactive mode
-		runInteractiveMode(&options)
-	} else {
-		// Handle unnamed arguments (year and month)
-		args := flag.Args()
-		if len(args) > 0 {
-			if year, err := strconv.Atoi(args[0]); err == nil {
-				options.Year = year
-			} else {
-				fmt.Println("Invalid year, using current year")
+		if noFlagsOrArgs {
+			// Run in interactive mode
+			runInteractiveMode(&options)
+		} else {
+			// Handle unnamed arguments (year and month)
+			if len(args) > 0 {
+				if year, err := strconv.Atoi(args[0]); err == nil {
+					options.Year = year
+				} else {
+					fmt.Println("Invalid year, using current year")
+				}
+			}
+
+			if len(args) > 1 {
+				if month, err := strconv.Atoi(args[1]); err == nil && month >= 1 && month <= 12 {
+					options.Month = month
+				} else {
+					fmt.Println("Invalid month, generating calendar for the whole year")
+				}
 			}
 		}
 
-		if len(args) > 1 {
-			if month, err := strconv.Atoi(args[1]); err == nil && month >= 1 && month <= 12 {
-				options.Month = month
-			} else {
-				fmt.Println("Invalid month, generating calendar for the whole year")
-			}
-		}
+		// Generate and print calendar
+		printCalendar(options)
 	}
-
-	// Generate and print calendar
-	printCalendar(options)
 }
 
 func runInteractiveMode(options *CalendarOptions) {
