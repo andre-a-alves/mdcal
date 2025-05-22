@@ -1,307 +1,208 @@
 package interactive
 
 import (
-	"bufio"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/andre-a-alves/mdcal/pkg/calendar"
-	"github.com/google/go-cmp/cmp"
 )
 
-func TestReadInput(t *testing.T) {
+func TestInitialize(t *testing.T) {
+	// Test with default options
+	options := calendar.NewOptions()
+	model := Initialize(&options)
+
+	// Check that the model was initialized correctly
+	if model.weekdayIndex != int(options.FirstDayOfWeek) {
+		t.Errorf("Expected weekdayIndex to be %d, got %d", int(options.FirstDayOfWeek), model.weekdayIndex)
+	}
+
+	if model.showWeekNumbers != options.ShowCalendarWeek {
+		t.Errorf("Expected showWeekNumbers to be %v, got %v", options.ShowCalendarWeek, model.showWeekNumbers)
+	}
+
+	if model.showWeekends != options.ShowWeekends {
+		t.Errorf("Expected showWeekends to be %v, got %v", options.ShowWeekends, model.showWeekends)
+	}
+
+	if model.showComments != options.ShowComments {
+		t.Errorf("Expected showComments to be %v, got %v", options.ShowComments, model.showComments)
+	}
+
+	if model.useShortDayNames != options.UseShortDayNames {
+		t.Errorf("Expected useShortDayNames to be %v, got %v", options.UseShortDayNames, model.useShortDayNames)
+	}
+
+	if model.dateRangeEnabled != (options.EndMonth != nil) {
+		t.Errorf("Expected dateRangeEnabled to be %v, got %v", options.EndMonth != nil, model.dateRangeEnabled)
+	}
+
+	// Test with custom options
+	month := 5
+	endYear := 2024
+	endMonth := 7
+	customOptions := calendar.Options{
+		Year:             2023,
+		Month:            &month,
+		EndYear:          &endYear,
+		EndMonth:         &endMonth,
+		FirstDayOfWeek:   time.Sunday,
+		ShowCalendarWeek: false,
+		ShowWeekends:     false,
+		ShowComments:     false,
+		UseShortDayNames: true,
+		Justify:          "center",
+	}
+	customModel := Initialize(&customOptions)
+
+	// Check that the model was initialized correctly
+	if customModel.weekdayIndex != int(customOptions.FirstDayOfWeek) {
+		t.Errorf("Expected weekdayIndex to be %d, got %d", int(customOptions.FirstDayOfWeek), customModel.weekdayIndex)
+	}
+
+	if customModel.showWeekNumbers != customOptions.ShowCalendarWeek {
+		t.Errorf("Expected showWeekNumbers to be %v, got %v", customOptions.ShowCalendarWeek, customModel.showWeekNumbers)
+	}
+
+	if customModel.showWeekends != customOptions.ShowWeekends {
+		t.Errorf("Expected showWeekends to be %v, got %v", customOptions.ShowWeekends, customModel.showWeekends)
+	}
+
+	if customModel.showComments != customOptions.ShowComments {
+		t.Errorf("Expected showComments to be %v, got %v", customOptions.ShowComments, customModel.showComments)
+	}
+
+	if customModel.useShortDayNames != customOptions.UseShortDayNames {
+		t.Errorf("Expected useShortDayNames to be %v, got %v", customOptions.UseShortDayNames, customModel.useShortDayNames)
+	}
+
+	if customModel.dateRangeEnabled != (customOptions.EndMonth != nil) {
+		t.Errorf("Expected dateRangeEnabled to be %v, got %v", customOptions.EndMonth != nil, customModel.dateRangeEnabled)
+	}
+
+	if customModel.justifyIndex != 1 { // 1 is the index for "center"
+		t.Errorf("Expected justifyIndex to be %d, got %d", 1, customModel.justifyIndex)
+	}
+}
+
+func TestValidateYear(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		expected string
+		name    string
+		input   string
+		wantErr bool
 	}{
 		{
-			name:     "Empty string",
-			input:    "\n",
-			expected: "",
+			name:    "Empty string",
+			input:   "",
+			wantErr: false,
 		},
 		{
-			name:     "String with whitespace",
-			input:    "  hello  \n",
-			expected: "hello",
+			name:    "Valid year",
+			input:   "2025",
+			wantErr: false,
 		},
 		{
-			name:     "String without whitespace",
-			input:    "hello\n",
-			expected: "hello",
-		},
-		{
-			name:     "Multiple lines (only reads first)",
-			input:    "line1\nline2\n",
-			expected: "line1",
+			name:    "Invalid year",
+			input:   "not-a-year",
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := bufio.NewReader(strings.NewReader(tt.input))
-			actual := readInput(reader)
-			if diff := cmp.Diff(tt.expected, actual); diff != "" {
-				t.Errorf("readInput() mismatch (-want +got):\n%s", diff)
+			err := validateYear(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateYear() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPromptForYear(t *testing.T) {
+func TestValidateMonth(t *testing.T) {
 	tests := []struct {
-		name         string
-		input        string
-		initialYear  int
-		expectedYear int
+		name    string
+		input   string
+		wantErr bool
 	}{
 		{
-			name:         "Empty input (use default)",
-			input:        "\n",
-			initialYear:  2023,
-			expectedYear: 2023,
+			name:    "Empty string",
+			input:   "",
+			wantErr: false,
 		},
 		{
-			name:         "Valid year",
-			input:        "2025\n",
-			initialYear:  2023,
-			expectedYear: 2025,
+			name:    "Valid month",
+			input:   "7",
+			wantErr: false,
 		},
 		{
-			name:         "Invalid year (use default)",
-			input:        "not-a-year\n",
-			initialYear:  2023,
-			expectedYear: 2023,
+			name:    "Invalid month (not a number)",
+			input:   "not-a-month",
+			wantErr: true,
+		},
+		{
+			name:    "Month out of range (too high)",
+			input:   "13",
+			wantErr: true,
+		},
+		{
+			name:    "Month out of range (too low)",
+			input:   "0",
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := bufio.NewReader(strings.NewReader(tt.input))
-			options := calendar.Options{Year: tt.initialYear}
-
-			promptForYear(reader, &options)
-
-			if diff := cmp.Diff(tt.expectedYear, options.Year); diff != "" {
-				t.Errorf("promptForYear() mismatch (-want +got):\n%s", diff)
+			err := validateMonth(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateMonth() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestPromptForMonth(t *testing.T) {
-	tests := []struct {
-		name          string
-		input         string
-		initialMonth  *int
-		expectedMonth *int
-	}{
-		{
-			name:          "Empty input (whole year)",
-			input:         "\n",
-			initialMonth:  intPtr(5),
-			expectedMonth: nil,
-		},
-		{
-			name:          "Valid month",
-			input:         "7\n",
-			initialMonth:  intPtr(5),
-			expectedMonth: intPtr(7),
-		},
-		{
-			name:          "Invalid month (use whole year)",
-			input:         "not-a-month\n",
-			initialMonth:  intPtr(5),
-			expectedMonth: nil,
-		},
-		{
-			name:          "Month out of range (use whole year)",
-			input:         "13\n",
-			initialMonth:  intPtr(5),
-			expectedMonth: nil,
-		},
-		{
-			name:          "Month zero (use whole year)",
-			input:         "0\n",
-			initialMonth:  intPtr(5),
-			expectedMonth: nil,
-		},
+func TestUpdateOptions(t *testing.T) {
+	// Create a model with some initial values
+	options := calendar.NewOptions()
+	model := Initialize(&options)
+
+	// Set some values in the model
+	model.weekdayIndex = int(time.Sunday)
+	model.showWeekNumbers = false
+	model.showWeekends = false
+	model.showComments = false
+	model.useShortDayNames = true
+	model.justifyIndex = 1 // "center"
+
+	// Update the options
+	err := model.updateOptions()
+	if err != nil {
+		t.Fatalf("updateOptions() error = %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := bufio.NewReader(strings.NewReader(tt.input))
-			options := calendar.Options{Month: tt.initialMonth}
-
-			promptForMonth(reader, &options)
-
-			// Compare month values, handling nil pointers
-			if (tt.expectedMonth == nil && options.Month != nil) ||
-				(tt.expectedMonth != nil && options.Month == nil) {
-				t.Errorf("promptForMonth() expected month: %v, got: %v",
-					ptrValue(tt.expectedMonth), ptrValue(options.Month))
-			} else if tt.expectedMonth != nil && options.Month != nil &&
-				*tt.expectedMonth != *options.Month {
-				t.Errorf("promptForMonth() expected month: %d, got: %d",
-					*tt.expectedMonth, *options.Month)
-			}
-		})
-	}
-}
-
-func TestPromptForWeekStartDay(t *testing.T) {
-	tests := []struct {
-		name             string
-		input            string
-		initialFirstDay  time.Weekday
-		expectedFirstDay time.Weekday
-	}{
-		{
-			name:             "Empty input (use default)",
-			input:            "\n",
-			initialFirstDay:  time.Monday,
-			expectedFirstDay: time.Monday,
-		},
-		{
-			name:             "Valid day (full name)",
-			input:            "Sunday\n",
-			initialFirstDay:  time.Monday,
-			expectedFirstDay: time.Sunday,
-		},
-		{
-			name:             "Valid day (short name)",
-			input:            "Fri\n",
-			initialFirstDay:  time.Monday,
-			expectedFirstDay: time.Friday,
-		},
+	// Check that the options were updated correctly
+	if options.FirstDayOfWeek != time.Sunday {
+		t.Errorf("Expected FirstDayOfWeek to be %v, got %v", time.Sunday, options.FirstDayOfWeek)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := bufio.NewReader(strings.NewReader(tt.input))
-			options := calendar.Options{FirstDayOfWeek: tt.initialFirstDay}
-
-			promptForWeekStartDay(reader, &options)
-
-			if diff := cmp.Diff(tt.expectedFirstDay, options.FirstDayOfWeek); diff != "" {
-				t.Errorf("promptForWeekStartDay() mismatch (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestPromptForBooleanOption(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		expected bool
-	}{
-		{
-			name:     "Empty input (default: false)",
-			input:    "\n",
-			expected: true,
-		},
-		{
-			name:     "Yes (lowercase)",
-			input:    "yes\n",
-			expected: false,
-		},
-		{
-			name:     "Y (lowercase)",
-			input:    "y\n",
-			expected: false,
-		},
-		{
-			name:     "Yes (uppercase)",
-			input:    "YES\n",
-			expected: false,
-		},
-		{
-			name:     "No (lowercase)",
-			input:    "no\n",
-			expected: true,
-		},
-		{
-			name:     "N (lowercase)",
-			input:    "n\n",
-			expected: true,
-		},
-		{
-			name:     "Invalid input (default: false)",
-			input:    "invalid\n",
-			expected: true,
-		},
+	if options.ShowCalendarWeek != false {
+		t.Errorf("Expected ShowCalendarWeek to be %v, got %v", false, options.ShowCalendarWeek)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := bufio.NewReader(strings.NewReader(tt.input))
-			actual := promptForBooleanOption(reader, "Prompt: ")
-
-			if diff := cmp.Diff(tt.expected, actual); diff != "" {
-				t.Errorf("promptForBooleanOption() mismatch (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestPromptForJustification(t *testing.T) {
-	tests := []struct {
-		name            string
-		input           string
-		initialJustify  string
-		expectedJustify string
-	}{
-		{
-			name:            "Empty input (use default)",
-			input:           "\n",
-			initialJustify:  "left",
-			expectedJustify: "left",
-		},
-		{
-			name:            "Valid justify (left)",
-			input:           "left\n",
-			initialJustify:  "center",
-			expectedJustify: "left",
-		},
-		{
-			name:            "Valid justify (center)",
-			input:           "center\n",
-			initialJustify:  "left",
-			expectedJustify: "center",
-		},
-		{
-			name:            "Valid justify (right)",
-			input:           "right\n",
-			initialJustify:  "left",
-			expectedJustify: "right",
-		},
-		{
-			name:            "Invalid justify (use default)",
-			input:           "invalid\n",
-			initialJustify:  "left",
-			expectedJustify: "left",
-		},
-		{
-			name:            "Mixed case justify",
-			input:           "CeNtEr\n",
-			initialJustify:  "left",
-			expectedJustify: "center",
-		},
+	if options.ShowWeekends != false {
+		t.Errorf("Expected ShowWeekends to be %v, got %v", false, options.ShowWeekends)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := bufio.NewReader(strings.NewReader(tt.input))
-			options := calendar.Options{Justify: tt.initialJustify}
+	if options.ShowComments != false {
+		t.Errorf("Expected ShowComments to be %v, got %v", false, options.ShowComments)
+	}
 
-			promptForJustification(reader, &options)
+	if options.UseShortDayNames != true {
+		t.Errorf("Expected UseShortDayNames to be %v, got %v", true, options.UseShortDayNames)
+	}
 
-			if diff := cmp.Diff(tt.expectedJustify, options.Justify); diff != "" {
-				t.Errorf("promptForJustification() mismatch (-want +got):\n%s", diff)
-			}
-		})
+	if options.Justify != "center" {
+		t.Errorf("Expected Justify to be %v, got %v", "center", options.Justify)
 	}
 }
 
