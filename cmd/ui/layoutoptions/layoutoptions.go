@@ -265,7 +265,8 @@ func (m Model) Done() bool {
 
 // GetFirstDayOfWeek returns the selected first day of week
 func (m Model) GetFirstDayOfWeek() time.Weekday {
-	return time.Weekday(m.weekdayIndex)
+	// Convert from UI index (Monday=0, Tuesday=1, etc.) to time.Weekday (Sunday=0, Monday=1, etc.)
+	return time.Weekday((m.weekdayIndex + 1) % 7)
 }
 
 // GetShowWeekNumbers returns whether to show week numbers
