@@ -166,8 +166,14 @@ func validateYear(s string) error {
 	if s == "" {
 		return nil
 	}
-	_, err := strconv.Atoi(s)
-	return err
+	year, err := strconv.Atoi(s)
+	if err != nil {
+		return err
+	}
+	if year < 1 || year > 9999 {
+		return fmt.Errorf("year must be between 1 and 9999")
+	}
+	return nil
 }
 
 // validateMonth checks if the input is a valid month (1-12)
@@ -393,6 +399,9 @@ func (m *Model) updateOptions() error {
 		if err != nil {
 			return fmt.Errorf("invalid year: %v", err)
 		}
+		if year < 1 || year > 9999 {
+			return fmt.Errorf("year must be between 1 and 9999")
+		}
 		m.options.Year = year
 	}
 
@@ -419,6 +428,9 @@ func (m *Model) updateOptions() error {
 			endYear, err = strconv.Atoi(m.inputs[2].Value())
 			if err != nil {
 				return fmt.Errorf("invalid end year: %v", err)
+			}
+			if endYear < 1 || endYear > 9999 {
+				return fmt.Errorf("end year must be between 1 and 9999")
 			}
 		}
 		m.options.EndYear = &endYear

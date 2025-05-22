@@ -118,8 +118,14 @@ func validateYear(s string) error {
 	if s == "" {
 		return nil
 	}
-	_, err := strconv.Atoi(s)
-	return err
+	year, err := strconv.Atoi(s)
+	if err != nil {
+		return err
+	}
+	if year < 1 || year > 9999 {
+		return fmt.Errorf("year must be between 1 and 9999")
+	}
+	return nil
 }
 
 // validateMonth checks if the input is a valid month (1-12)
@@ -195,9 +201,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Check for validation errors
 			valid := true
 
+			// Validate year input if not empty
+			if m.inputs[0].Value() != "" {
+				if err := validateYear(m.inputs[0].Value()); err != nil {
+					m.err = err.Error()
+					valid = false
+				}
+			}
+
 			// Validate month input if not empty
 			if (m.mode == MonthMode || m.mode == RangeMode) && m.inputs[1].Value() != "" {
 				if err := validateMonth(m.inputs[1].Value()); err != nil {
+					m.err = err.Error()
+					valid = false
+				}
+			}
+
+			// Validate end year input if not empty
+			if m.mode == RangeMode && m.inputs[2].Value() != "" {
+				if err := validateYear(m.inputs[2].Value()); err != nil {
 					m.err = err.Error()
 					valid = false
 				}
@@ -300,7 +322,15 @@ func (m Model) GetYear() (int, error) {
 	if m.inputs[0].Value() == "" {
 		return time.Now().Year(), nil
 	}
-	return strconv.Atoi(m.inputs[0].Value())
+	year, err := strconv.Atoi(m.inputs[0].Value())
+	if err != nil {
+		return 0, err
+	}
+	// Validate year range
+	if year < 1 || year > 9999 {
+		return 0, fmt.Errorf("year must be between 1 and 9999")
+	}
+	return year, nil
 }
 
 // GetMonth returns the entered month
@@ -341,6 +371,10 @@ func (m Model) GetEndYear() (*int, error) {
 	endYear, err := strconv.Atoi(m.inputs[2].Value())
 	if err != nil {
 		return nil, err
+	}
+	// Validate year range
+	if endYear < 1 || endYear > 9999 {
+		return nil, fmt.Errorf("end year must be between 1 and 9999")
 	}
 	return &endYear, nil
 }
