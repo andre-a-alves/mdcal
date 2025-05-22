@@ -7,7 +7,7 @@ A CLI tool for creating markdown calendars.
 
 ## Description
 
-mdcal is a command-line utility that generates customizable markdown calendars for a specific month or an entire year. It can be run either with command-line flags or in interactive mode, allowing you to create calendars with various options such as custom week start days, calendar week numbers, and more.
+mdcal is a command-line utility that generates customizable markdown calendars for a specific month, a range of months, or an entire year. It can be run either with command-line flags or in interactive mode, allowing you to create calendars with various options such as custom week start days, calendar week numbers, and more.
 
 ## Installation
 
