@@ -37,7 +37,7 @@ func getWeekdayNames(firstDayOfWeek time.Weekday, showWeekends bool) ([]string, 
 }
 
 // prepareColumnHeaders creates the column headers and their widths
-func prepareColumnHeaders(dayFullNames []string, showCalendarWeek bool, showComments bool, justify string) ([]string, []int) {
+func prepareColumnHeaders(dayShortNames []string, dayFullNames []string, useShortDayNames bool, showCalendarWeek bool, showComments bool, justify string) ([]string, []int) {
 	var columnHeaders []string
 	var columnWidths []int
 
@@ -51,7 +51,13 @@ func prepareColumnHeaders(dayFullNames []string, showCalendarWeek bool, showComm
 		}
 	}
 
-	for _, d := range dayFullNames {
+	// Use short day names if the option is set, otherwise use full day names
+	dayNames := dayFullNames
+	if useShortDayNames {
+		dayNames = dayShortNames
+	}
+
+	for _, d := range dayNames {
 		columnHeaders = append(columnHeaders, d)
 		columnWidths = append(columnWidths, len(d))
 	}
@@ -64,7 +70,7 @@ func prepareColumnHeaders(dayFullNames []string, showCalendarWeek bool, showComm
 	return columnHeaders, columnWidths
 }
 
-// generateTableHeader creates the header row and separator row for the markdown table
+// generateTableHeader creates the header row and separator row for the Markdown table
 func generateTableHeader(columnHeaders []string, columnWidths []int, justify string) string {
 	var sb strings.Builder
 
@@ -156,7 +162,7 @@ func generateWeekRow(cur time.Time, month time.Month, weekDays []time.Weekday, f
 	return sb.String()
 }
 
-// GenerateMonthCalendar generates a markdown calendar for the specified month
+// GenerateMonthCalendar generates a Markdown calendar for the specified month
 func GenerateMonthCalendar(options Options) string {
 	var sb strings.Builder
 	month := time.Month(*options.Month)
@@ -168,7 +174,7 @@ func GenerateMonthCalendar(options Options) string {
 	dayShortNames, dayFullNames := getWeekdayNames(options.FirstDayOfWeek, options.ShowWeekends)
 
 	// Prepare column headers and widths
-	columnHeaders, columnWidths := prepareColumnHeaders(dayFullNames, options.ShowCalendarWeek,
+	columnHeaders, columnWidths := prepareColumnHeaders(dayShortNames, dayFullNames, options.UseShortDayNames, options.ShowCalendarWeek,
 		options.ShowComments, options.Justify)
 
 	// Generate table header

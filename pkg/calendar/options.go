@@ -12,6 +12,7 @@ type Options struct {
 	ShowCalendarWeek bool
 	ShowWeekends     bool
 	ShowComments     bool
+	UseShortDayNames bool // Use short day names (Mon, Tue, etc.) instead of full names
 	Justify          string
 }
 
@@ -26,6 +27,7 @@ func NewOptions() Options {
 		ShowCalendarWeek: true,
 		ShowWeekends:     true,
 		ShowComments:     true,
+		UseShortDayNames: false,
 		Justify:          "left",
 	}
 }

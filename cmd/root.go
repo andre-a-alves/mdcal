@@ -42,6 +42,7 @@ If no arguments are provided, it runs in interactive mode.`
 	rootCmd.PersistentFlags().BoolP("workweek", "W", false, "Leave weekends off the calendar")
 	rootCmd.PersistentFlags().BoolP("no-comment", "c", false, "Leave the comments column off")
 	rootCmd.PersistentFlags().BoolP("version", "v", false, "Print version information")
+	rootCmd.PersistentFlags().BoolP("short", "S", false, "Display calendar with short day names (Mon, Tue, etc.)")
 	rootCmd.PersistentFlags().StringP("justify", "j", "left", "Cell justification: left, center, or right")
 
 	// handleVersionFlag checks if the version flag is set and prints the version if it is
@@ -60,6 +61,7 @@ If no arguments are provided, it runs in interactive mode.`
 		noWeekNo, _ := cmd.Flags().GetBool("no-week-no")
 		workweek, _ := cmd.Flags().GetBool("workweek")
 		noComment, _ := cmd.Flags().GetBool("no-comment")
+		shortDayNames, _ := cmd.Flags().GetBool("short")
 		justify, _ := cmd.Flags().GetString("justify")
 
 		options := calendar.NewOptions()
@@ -67,6 +69,7 @@ If no arguments are provided, it runs in interactive mode.`
 		options.ShowCalendarWeek = !noWeekNo
 		options.ShowWeekends = !workweek
 		options.ShowComments = !noComment
+		options.UseShortDayNames = shortDayNames
 		options.Justify = justify
 
 		return options
