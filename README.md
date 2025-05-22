@@ -2,6 +2,9 @@
 
 A CLI tool for creating markdown calendars.
 
+![GitHub License](https://img.shields.io/github/license/andre-a-alves/mdcal?style=for-the-badge)
+![GitHub Release](https://img.shields.io/github/v/release/andre-a-alves/mdcal?style=for-the-badge)
+
 ## Description
 
 mdcal is a command-line utility that generates customizable markdown calendars for a specific month or an entire year. It can be run either with command-line flags or in interactive mode, allowing you to create calendars with various options such as custom week start days, calendar week numbers, and more.
