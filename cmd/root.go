@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/andre-a-alves/mdcal/cmd/calendar"
+	"github.com/andre-a-alves/mdcal/cmd/interactive"
+	"github.com/andre-a-alves/mdcal/cmd/utils"
 	"os"
 	"strconv"
 
-	"github.com/andre-a-alves/mdcal/pkg/calendar"
-	"github.com/andre-a-alves/mdcal/pkg/interactive"
-	"github.com/andre-a-alves/mdcal/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -84,7 +84,11 @@ If no arguments are provided, it runs in interactive mode.`
 	processYearArg := func(args []string, options *calendar.Options) {
 		if len(args) > 0 {
 			if year, err := strconv.Atoi(args[0]); err == nil {
-				options.Year = year
+				if year < 1 || year > 9999 {
+					fmt.Println("Year must be between 1 and 9999, using current year")
+				} else {
+					options.Year = year
+				}
 			} else {
 				fmt.Println("Invalid year, using current year")
 			}
@@ -119,11 +123,19 @@ If no arguments are provided, it runs in interactive mode.`
 			endMonth, errMonth := strconv.Atoi(args[3])
 
 			if errYear == nil && errMonth == nil && endMonth >= 1 && endMonth <= 12 {
-				options.EndYear = &endYear
-				options.EndMonth = &endMonth
+				if endYear < 1 || endYear > 9999 {
+					fmt.Println("End year must be between 1 and 9999, ignoring range")
+					options.EndYear = nil
+					options.EndMonth = nil
+				} else {
+					options.EndYear = &endYear
+					options.EndMonth = &endMonth
+				}
 			} else {
 				if errYear != nil {
 					fmt.Println("Invalid end year, ignoring range")
+				} else if endYear < 1 || endYear > 9999 {
+					fmt.Println("End year must be between 1 and 9999, ignoring range")
 				}
 				if errMonth != nil || endMonth < 1 || endMonth > 12 {
 					fmt.Println("Invalid end month, ignoring range")
@@ -152,13 +164,17 @@ If no arguments are provided, it runs in interactive mode.`
 
 		if shouldRunInteractively(cmd, args) {
 			// Run in interactive mode
-			interactive.RunInteractiveMode(&options)
+			// Only generate the calendar if the user completed the interactive mode
+			if completed := interactive.RunInteractiveMode(&options); completed {
+				// Generate and print calendar
+				fmt.Print(calendar.PrintCalendar(options))
+			}
 		} else {
 			// Process command-line arguments
 			processCommandLineArgs(args, &options)
-		}
 
-		// Generate and print calendar
-		fmt.Print(calendar.PrintCalendar(options))
+			// Generate and print calendar
+			fmt.Print(calendar.PrintCalendar(options))
+		}
 	}
 }
