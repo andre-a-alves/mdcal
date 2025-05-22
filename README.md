@@ -7,7 +7,7 @@ A CLI tool for creating markdown calendars.
 
 ## Description
 
-mdcal is a command-line utility that generates customizable markdown calendars for a specific month or an entire year. It can be run either with command-line flags or in interactive mode, allowing you to create calendars with various options such as custom week start days, calendar week numbers, and more.
+mdcal is a command-line utility that generates customizable markdown calendars for a specific month, a range of months, or an entire year. It can be run either with command-line flags or in interactive mode, allowing you to create calendars with various options such as custom week start days, calendar week numbers, and more.
 
 ## Installation
 
@@ -91,27 +91,30 @@ mdcal 2025 3 5
 mdcal 2025 12 2026 1
 
 # Generate calendar with custom options
-mdcal 2025 12 --start=sunday --no-week-no --workweek=true --no-comment=true --justify=center
+mdcal 2025 12 --start=sunday --no-week-no --workweek=true --no-comment=true --short --justify=center
 
 # Using short flags
-mdcal 2025 12 -s sunday -w -W -c -j center
+mdcal 2025 12 -s sunday -w -W -c -S -j center
 ```
 
 Note: When specifying a range of months, the end date must be after the start date. If an invalid range is provided (e.g., `mdcal 2026 1 2025 12`), an error message will be displayed.
 
 ## Options
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `-s, --start` | First day of the week (monday/mon) | monday |
+| Flag               | Description | Default |
+|--------------------|-------------|---------|
+| `-s, --start`      | First day of the week (monday/mon) | monday |
 | `-w, --no-week-no` | Leave week numbers off the calendar | false |
-| `-W, --workweek` | Leave weekends off the calendar | false |
+| `-W, --workweek`   | Leave weekends off the calendar | false |
 | `-c, --no-comment` | Leave the comments column off | false |
-| `-j, --justify` | Cell justification: left, center, or right | left |
-| `-v, --version` | Print version information | - |
-| `-h, --help` | Show help information | - |
+| `-S, --short`      | Display calendar with short day names (Mon, Tue, etc.) | false |
+| `-j, --justify`    | Cell justification: left, center, or right | left |
+| `-v, --version`    | Print version information | - |
+| `-h, --help`       | Show help information | - |
 
 ## Example Output
+
+### Default (Full Day Names)
 
 ```markdown
 | CW   | Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday | Comments |
@@ -132,6 +135,28 @@ When rendered in Markdown, this produces a calendar table like:
 | _51_ | 15     | 16      | 17        | 18       | 19     | 20       | 21     |          |
 | _52_ | 22     | 23      | 24        | 25       | 26     | 27       | 28     |          |
 | _1_  | 29     | 30      | 31        |          |        |          |        |          |
+
+### With Short Day Names (-S, --short)
+
+```markdown
+| CW   | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Comments |
+| :--: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :------: |
+| _49_ | 1   | 2   | 3   | 4   | 5   | 6   | 7   |          |
+| _50_ | 8   | 9   | 10  | 11  | 12  | 13  | 14  |          |
+| _51_ | 15  | 16  | 17  | 18  | 19  | 20  | 21  |          |
+| _52_ | 22  | 23  | 24  | 25  | 26  | 27  | 28  |          |
+| _1_  | 29  | 30  | 31  |     |     |     |     |          |
+```
+
+When rendered in Markdown, this produces a calendar table like:
+
+| CW   | Mon | Tue | Wed | Thu | Fri | Sat | Sun | Comments |
+|:----:| :-: | :-: | :-: | :-: | :-: | :-: | :-: | :------: |
+| _49_ | 1   | 2   | 3   | 4   | 5   | 6   | 7   |          |
+| _50_ | 8   | 9   | 10  | 11  | 12  | 13  | 14  |          |
+| _51_ | 15  | 16  | 17  | 18  | 19  | 20  | 21  |          |
+| _52_ | 22  | 23  | 24  | 25  | 26  | 27  | 28  |          |
+| _1_  | 29  | 30  | 31  |     |     |     |     |          |
 
 ## License
 

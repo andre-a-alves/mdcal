@@ -11,14 +11,17 @@ import (
 	"github.com/andre-a-alves/mdcal/pkg/utils"
 )
 
-// RunInteractiveMode prompts the user for calendar options and updates the provided options
-func RunInteractiveMode(options *calendar.Options) {
-	reader := bufio.NewReader(os.Stdin)
+// readInput reads a line of input from the reader and trims whitespace
+func readInput(reader *bufio.Reader) string {
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
+}
 
-	// Get year
+// promptForYear prompts the user for a year and updates the options
+func promptForYear(reader *bufio.Reader, options *calendar.Options) {
 	fmt.Printf("Enter year (default: %d): ", options.Year)
-	yearInput, _ := reader.ReadString('\n')
-	yearInput = strings.TrimSpace(yearInput)
+	yearInput := readInput(reader)
+
 	if yearInput != "" {
 		if year, err := strconv.Atoi(yearInput); err == nil {
 			options.Year = year
@@ -26,11 +29,13 @@ func RunInteractiveMode(options *calendar.Options) {
 			fmt.Println("Invalid year, using current year")
 		}
 	}
+}
 
-	// Get month
+// promptForMonth prompts the user for a month and updates the options
+func promptForMonth(reader *bufio.Reader, options *calendar.Options) {
 	fmt.Print("Enter month (1-12, empty for whole year): ")
-	monthInput, _ := reader.ReadString('\n')
-	monthInput = strings.TrimSpace(monthInput)
+	monthInput := readInput(reader)
+
 	if monthInput != "" {
 		if month, err := strconv.Atoi(monthInput); err == nil && month >= 1 && month <= 12 {
 			options.Month = &month
@@ -40,49 +45,33 @@ func RunInteractiveMode(options *calendar.Options) {
 	} else {
 		options.Month = nil
 	}
+}
 
-	// Get week start day
+// promptForWeekStartDay prompts the user for the first day of the week and updates the options
+func promptForWeekStartDay(reader *bufio.Reader, options *calendar.Options) {
 	fmt.Print("First day of the week (monday/mon, sunday/sun, etc., default: monday): ")
-	weekStartInput, _ := reader.ReadString('\n')
-	weekStartInput = strings.TrimSpace(weekStartInput)
+	weekStartInput := readInput(reader)
+
 	if weekStartInput != "" {
 		options.FirstDayOfWeek = utils.ParseWeekday(weekStartInput)
 	}
+}
 
-	// Leave week numbers off?
-	fmt.Print("Leave week numbers off the calendar? (y/n, default: n): ")
-	weekInput, _ := reader.ReadString('\n')
-	weekInput = strings.TrimSpace(strings.ToLower(weekInput))
-	if weekInput == "y" || weekInput == "yes" {
-		options.ShowCalendarWeek = false
-	} else {
-		options.ShowCalendarWeek = true
-	}
+// promptForBooleanOption prompts the user for a yes/no option and returns the result
+func promptForBooleanOption(reader *bufio.Reader, prompt string) bool {
+	fmt.Print(prompt)
+	input := readInput(reader)
+	input = strings.ToLower(input)
 
-	// Leave weekends off?
-	fmt.Print("Leave weekends off the calendar? (y/n, default: n): ")
-	workweekInput, _ := reader.ReadString('\n')
-	workweekInput = strings.TrimSpace(strings.ToLower(workweekInput))
-	if workweekInput == "y" || workweekInput == "yes" {
-		options.ShowWeekends = false
-	} else {
-		options.ShowWeekends = true
-	}
+	return !(input == "y" || input == "yes")
+}
 
-	// Leave comments column off?
-	fmt.Print("Leave comments column off? (y/n, default: n): ")
-	commentsInput, _ := reader.ReadString('\n')
-	commentsInput = strings.TrimSpace(strings.ToLower(commentsInput))
-	if commentsInput == "y" || commentsInput == "yes" {
-		options.ShowComments = false
-	} else {
-		options.ShowComments = true
-	}
-
-	// Cell justification
+// promptForJustification prompts the user for cell justification and updates the options
+func promptForJustification(reader *bufio.Reader, options *calendar.Options) {
 	fmt.Print("Cell justification (left, center, right, default: left): ")
-	justifyInput, _ := reader.ReadString('\n')
-	justifyInput = strings.TrimSpace(strings.ToLower(justifyInput))
+	justifyInput := readInput(reader)
+	justifyInput = strings.ToLower(justifyInput)
+
 	if justifyInput != "" {
 		if justifyInput == "left" || justifyInput == "center" || justifyInput == "right" {
 			options.Justify = justifyInput
@@ -90,6 +79,24 @@ func RunInteractiveMode(options *calendar.Options) {
 			fmt.Println("Invalid justification, using left")
 		}
 	}
+}
+
+// RunInteractiveMode prompts the user for calendar options and updates the provided options
+func RunInteractiveMode(options *calendar.Options) {
+	reader := bufio.NewReader(os.Stdin)
+
+	// Prompt for each option
+	promptForYear(reader, options)
+	promptForMonth(reader, options)
+	promptForWeekStartDay(reader, options)
+
+	// Boolean options
+	options.ShowCalendarWeek = promptForBooleanOption(reader, "Leave week numbers off the calendar? (y/n, default: n): ")
+	options.ShowWeekends = promptForBooleanOption(reader, "Leave weekends off the calendar? (y/n, default: n): ")
+	options.ShowComments = promptForBooleanOption(reader, "Leave comments column off? (y/n, default: n): ")
+
+	// Justification
+	promptForJustification(reader, options)
 
 	fmt.Println() // Add a blank line before calendar output
 }
