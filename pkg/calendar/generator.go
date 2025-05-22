@@ -13,7 +13,7 @@ func GenerateMonthCalendar(options Options) string {
 	var sb strings.Builder
 
 	// header
-	month := time.Month(options.Month)
+	month := time.Month(*options.Month)
 	sb.WriteString(fmt.Sprintf("# %s %d\n\n", month.String(), options.Year))
 
 	// all weekday names with full names
@@ -137,33 +137,39 @@ func GenerateMonthCalendar(options Options) string {
 func PrintCalendar(options Options) string {
 	var result strings.Builder
 
-	// Validate date range the end date is specified
-	if options.EndYear != 0 && options.EndMonth != 0 {
-		startDate := time.Date(options.Year, time.Month(options.Month), 1, 0, 0, 0, 0, time.UTC)
-		endDate := time.Date(options.EndYear, time.Month(options.EndMonth), 1, 0, 0, 0, 0, time.UTC)
+	// Validate date range if the end date is specified
+	if options.EndYear != nil && options.EndMonth != nil {
+		monthValue := 1
+		if options.Month != nil {
+			monthValue = *options.Month
+		}
+		startDate := time.Date(options.Year, time.Month(monthValue), 1, 0, 0, 0, 0, time.UTC)
+		endDate := time.Date(*options.EndYear, time.Month(*options.EndMonth), 1, 0, 0, 0, 0, time.UTC)
 
 		if startDate.After(endDate) {
 			return "Error: End date cannot be before start date\n"
 		}
 	}
 
-	if options.Month == 0 {
+	if options.Month == nil {
 		// Generate calendar for the whole year
 		for m := 1; m <= 12; m++ {
 			optionsCopy := options
-			optionsCopy.Month = m
+			monthValue := m
+			optionsCopy.Month = &monthValue
 			result.WriteString(GenerateMonthCalendar(optionsCopy))
 			result.WriteString("\n") // Add a blank line between months
 		}
-	} else if options.EndYear != 0 && options.EndMonth != 0 {
+	} else if options.EndYear != nil && options.EndMonth != nil {
 		// Generate calendar for a range of months
 		currentYear := options.Year
-		currentMonth := options.Month
+		currentMonth := *options.Month
 
 		for {
 			optionsCopy := options
 			optionsCopy.Year = currentYear
-			optionsCopy.Month = currentMonth
+			monthValue := currentMonth
+			optionsCopy.Month = &monthValue
 			result.WriteString(GenerateMonthCalendar(optionsCopy))
 			result.WriteString("\n") // Add a blank line between months
 
@@ -175,7 +181,7 @@ func PrintCalendar(options Options) string {
 			}
 
 			// Check if we've reached the end of the range
-			if currentYear > options.EndYear || (currentYear == options.EndYear && currentMonth > options.EndMonth) {
+			if currentYear > *options.EndYear || (currentYear == *options.EndYear && currentMonth > *options.EndMonth) {
 				break
 			}
 		}

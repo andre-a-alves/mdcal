@@ -91,7 +91,7 @@ If no arguments are provided, it runs in interactive mode.`
 
 			if len(args) > 1 {
 				if month, err := strconv.Atoi(args[1]); err == nil && month >= 1 && month <= 12 {
-					options.Month = month
+					options.Month = &month
 				} else {
 					fmt.Println("Invalid month, generating calendar for the whole year")
 				}
@@ -101,8 +101,9 @@ If no arguments are provided, it runs in interactive mode.`
 			if len(args) == 3 {
 				// If we have 3 args, it's year month endMonth (same year)
 				if endMonth, err := strconv.Atoi(args[2]); err == nil && endMonth >= 1 && endMonth <= 12 {
-					options.EndYear = options.Year
-					options.EndMonth = endMonth
+					endYear := options.Year
+					options.EndYear = &endYear
+					options.EndMonth = &endMonth
 				} else {
 					fmt.Println("Invalid end month, ignoring range")
 				}
@@ -112,8 +113,8 @@ If no arguments are provided, it runs in interactive mode.`
 				endMonth, errMonth := strconv.Atoi(args[3])
 
 				if errYear == nil && errMonth == nil && endMonth >= 1 && endMonth <= 12 {
-					options.EndYear = endYear
-					options.EndMonth = endMonth
+					options.EndYear = &endYear
+					options.EndMonth = &endMonth
 				} else {
 					if errYear != nil {
 						fmt.Println("Invalid end year, ignoring range")
@@ -121,8 +122,8 @@ If no arguments are provided, it runs in interactive mode.`
 					if errMonth != nil || endMonth < 1 || endMonth > 12 {
 						fmt.Println("Invalid end month, ignoring range")
 					}
-					options.EndYear = 0
-					options.EndMonth = 0
+					options.EndYear = nil
+					options.EndMonth = nil
 				}
 			}
 		}
