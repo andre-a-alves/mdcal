@@ -111,10 +111,6 @@ When rendered in Markdown, this produces a calendar table like:
 | _52_ | 22     | 23      | 24        | 25       | 26     | 27       | 28     |          |
 | _1_  | 29     | 30      | 31        |          |        |          |        |          |
 
-## Version
-
-Current version: 0.1.1
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
