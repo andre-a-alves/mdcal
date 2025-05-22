@@ -50,10 +50,11 @@ mdcal
 In interactive mode, you'll be prompted to enter:
 - Year (defaults to current year)
 - Month (1-12, empty for whole year)
-- Week start day (monday, sunday, etc.)
+- First day of the week (monday/mon, sunday/sun, etc.)
 - Whether to show calendar week numbers
-- Whether to show only workdays (Monday-Friday)
-- Whether to add a comments column
+- Whether to leave weekends off the calendar
+- Whether to leave the comments column off
+- Cell justification (left, center, or right)
 
 ### Command-Line Mode
 
@@ -70,20 +71,23 @@ mdcal 2025
 mdcal 2025 12
 
 # Generate calendar with custom options
-mdcal 2025 12 --weekstart=sunday --week=false --workweek=true --comments=false --justify=center
+mdcal 2025 12 --start=sunday --no-week-no --workweek=true --no-comment=true --justify=center
+
+# Using short flags
+mdcal 2025 12 -s sunday -w -W -c -j center
 ```
 
 ## Options
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--weekstart` | First day of the week (monday, sunday, etc.) | monday |
-| `--week` | Show calendar week numbers | true |
-| `--workweek` | Show only workdays (Monday-Friday) | false |
-| `--comments` | Add a comments column | true |
-| `--justify` | Cell justification: left, center, or right | left |
-| `--version` | Print version information | - |
-| `--help` | Show help information | - |
+| `-s, --start` | First day of the week (monday/mon) | monday |
+| `-w, --no-week-no` | Leave week numbers off the calendar | false |
+| `-W, --workweek` | Leave weekends off the calendar | false |
+| `-c, --no-comment` | Leave the comments column off | false |
+| `-j, --justify` | Cell justification: left, center, or right | left |
+| `-v, --version` | Print version information | - |
+| `-h, --help` | Show help information | - |
 
 ## Example Output
 

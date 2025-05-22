@@ -33,12 +33,12 @@ func init() {
 If no arguments are provided, it runs in interactive mode.`
 
 	// Define flags
-	rootCmd.PersistentFlags().String("weekstart", "monday", "First day of the week (monday, sunday, etc.)")
-	rootCmd.PersistentFlags().Bool("week", true, "Show calendar week numbers")
-	rootCmd.PersistentFlags().Bool("workweek", false, "Show only workdays (Monday-Friday)")
-	rootCmd.PersistentFlags().Bool("comments", true, "Add a comments column")
-	rootCmd.PersistentFlags().Bool("version", false, "Print version information")
-	rootCmd.PersistentFlags().String("justify", "left", "Cell justification: left, center, or right")
+	rootCmd.PersistentFlags().StringP("start", "s", "monday", "First day of the week (monday/mon)")
+	rootCmd.PersistentFlags().BoolP("no-week-no", "w", false, "Leave week numbers off the calendar")
+	rootCmd.PersistentFlags().BoolP("workweek", "W", false, "Leave weekends off the calendar")
+	rootCmd.PersistentFlags().BoolP("no-comment", "c", false, "Leave the comments column off")
+	rootCmd.PersistentFlags().BoolP("version", "v", false, "Print version information")
+	rootCmd.PersistentFlags().StringP("justify", "j", "left", "Cell justification: left, center, or right")
 
 	rootCmd.Run = func(cmd *cobra.Command, args []string) {
 		// Handle version flag
@@ -49,18 +49,18 @@ If no arguments are provided, it runs in interactive mode.`
 		}
 
 		// Get flag values
-		weekStart, _ := cmd.Flags().GetString("weekstart")
-		showCalWeek, _ := cmd.Flags().GetBool("week")
+		weekStart, _ := cmd.Flags().GetString("start")
+		noWeekNo, _ := cmd.Flags().GetBool("no-week-no")
 		workweek, _ := cmd.Flags().GetBool("workweek")
-		showComments, _ := cmd.Flags().GetBool("comments")
+		noComment, _ := cmd.Flags().GetBool("no-comment")
 		justify, _ := cmd.Flags().GetString("justify")
 
 		// Initialize options with defaults
 		options := calendar.NewOptions()
 		options.FirstDayOfWeek = utils.ParseWeekday(weekStart)
-		options.ShowCalendarWeek = showCalWeek
+		options.ShowCalendarWeek = !noWeekNo
 		options.ShowWeekends = !workweek
-		options.ShowComments = showComments
+		options.ShowComments = !noComment
 		options.Justify = justify
 
 		// Check if any args or flags were provided (excluding help flag)

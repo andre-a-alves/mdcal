@@ -42,25 +42,25 @@ func RunInteractiveMode(options *calendar.Options) {
 	}
 
 	// Get week start day
-	fmt.Print("Week starts on (monday, sunday, etc., default: monday): ")
+	fmt.Print("First day of the week (monday/mon, sunday/sun, etc., default: monday): ")
 	weekStartInput, _ := reader.ReadString('\n')
 	weekStartInput = strings.TrimSpace(weekStartInput)
 	if weekStartInput != "" {
 		options.FirstDayOfWeek = utils.ParseWeekday(weekStartInput)
 	}
 
-	// Show calendar week?
-	fmt.Print("Show calendar week numbers? (y/n, default: y): ")
+	// Leave week numbers off?
+	fmt.Print("Leave week numbers off the calendar? (y/n, default: n): ")
 	weekInput, _ := reader.ReadString('\n')
 	weekInput = strings.TrimSpace(strings.ToLower(weekInput))
-	if weekInput == "" || weekInput == "y" || weekInput == "yes" {
-		options.ShowCalendarWeek = true
-	} else {
+	if weekInput == "y" || weekInput == "yes" {
 		options.ShowCalendarWeek = false
+	} else {
+		options.ShowCalendarWeek = true
 	}
 
-	// Show work week only?
-	fmt.Print("Show work week only? (y/n, default: n): ")
+	// Leave weekends off?
+	fmt.Print("Leave weekends off the calendar? (y/n, default: n): ")
 	workweekInput, _ := reader.ReadString('\n')
 	workweekInput = strings.TrimSpace(strings.ToLower(workweekInput))
 	if workweekInput == "y" || workweekInput == "yes" {
@@ -69,14 +69,26 @@ func RunInteractiveMode(options *calendar.Options) {
 		options.ShowWeekends = true
 	}
 
-	// Show comments column?
-	fmt.Print("Add comments column? (y/n, default: y): ")
+	// Leave comments column off?
+	fmt.Print("Leave comments column off? (y/n, default: n): ")
 	commentsInput, _ := reader.ReadString('\n')
 	commentsInput = strings.TrimSpace(strings.ToLower(commentsInput))
-	if commentsInput == "" || commentsInput == "y" || commentsInput == "yes" {
-		options.ShowComments = true
-	} else {
+	if commentsInput == "y" || commentsInput == "yes" {
 		options.ShowComments = false
+	} else {
+		options.ShowComments = true
+	}
+
+	// Cell justification
+	fmt.Print("Cell justification (left, center, right, default: left): ")
+	justifyInput, _ := reader.ReadString('\n')
+	justifyInput = strings.TrimSpace(strings.ToLower(justifyInput))
+	if justifyInput != "" {
+		if justifyInput == "left" || justifyInput == "center" || justifyInput == "right" {
+			options.Justify = justifyInput
+		} else {
+			fmt.Println("Invalid justification, using left")
+		}
 	}
 
 	fmt.Println() // Add a blank line before calendar output

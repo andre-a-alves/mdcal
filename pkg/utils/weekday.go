@@ -7,20 +7,21 @@ import (
 
 // ParseWeekday converts a string representation of a weekday to time.Weekday
 func ParseWeekday(day string) time.Weekday {
-	switch strings.ToLower(day) {
-	case "sunday":
+	day = strings.ToLower(day)
+	switch {
+	case day == "sunday" || day == "sun":
 		return time.Sunday
-	case "monday":
+	case day == "monday" || day == "mon":
 		return time.Monday
-	case "tuesday":
+	case day == "tuesday" || day == "tue":
 		return time.Tuesday
-	case "wednesday":
+	case day == "wednesday" || day == "wed":
 		return time.Wednesday
-	case "thursday":
+	case day == "thursday" || day == "thu":
 		return time.Thursday
-	case "friday":
+	case day == "friday" || day == "fri":
 		return time.Friday
-	case "saturday":
+	case day == "saturday" || day == "sat":
 		return time.Saturday
 	default:
 		return time.Monday // Default to Monday
