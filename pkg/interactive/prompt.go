@@ -41,6 +41,7 @@ func promptForMonth(reader *bufio.Reader, options *calendar.Options) {
 			options.Month = &month
 		} else {
 			fmt.Println("Invalid month, generating calendar for the whole year")
+			options.Month = nil
 		}
 	} else {
 		options.Month = nil
